@@ -17,11 +17,15 @@ func connect(c echo.Context) error {
 	defer db.Close()
 	fmt.Printf("db info: %s\n", model.GetDBInfo())
 	if err != nil {
-		fmt.Println("DB接続エラー:", err)
+		fmt.Printf("DB接続エラー: %v\n", err)
 		return c.String(http.StatusInternalServerError, "DB接続失敗しました")
 	} else {
 		return c.String(http.StatusOK, "DB接続しました")
 	}
+}
+
+func connect2(c echo.Context) error {
+	return nil
 }
 
 func main() {
@@ -33,7 +37,7 @@ func main() {
         AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
     }))
 	
-	e.GET("/", connect)
+	e.GET("/", connect2)
 	e.GET("/restaurants", controller.GetRestaurants)
 	e.GET("/restaurant", controller.GetRestaurant)
 	e.Logger.Fatal(e.Start(":10000"))
