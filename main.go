@@ -25,7 +25,7 @@ func main() {
 
 	// CORSの設定
      e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-        AllowOrigins: []string{"http://localhost:8064","http://localhost:3000","http://180.43.174.138:8064", "http://localhost:10000", "https://seasonalfood-front.onrender.com:10000"},
+        AllowOrigins: []string{"http://localhost:8064","http://localhost:3000","http://180.43.174.138:8064", "http://localhost:10000", "https://seasonalfood-front.onrender.com"},
         AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
     }))
 	
