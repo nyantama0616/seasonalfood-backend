@@ -8,7 +8,7 @@ COPY .air.toml ./
 
 RUN go install github.com/cosmtrek/air@latest
 
-CMD ["air"]
+# CMD ["air"]
 
 # 本番用
 # FROM golang:1.19
@@ -19,4 +19,4 @@ CMD ["air"]
 
 # RUN go install github.com/cosmtrek/air@latest
 
-# CMD ["go", "run", "main.go"]
+CMD ["go", "run", "main.go"]

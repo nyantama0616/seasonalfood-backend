@@ -17,11 +17,17 @@ var DB *gorm.DB
 var err error
 
 func init(){
-	// .envファイルを読み込む
-    err := godotenv.Load()
-    if err != nil {
-        log.Fatal("Error loading .env file")
-    }
+    _, err := os.Stat(".env")
+	if err == nil {
+		// .envファイルが存在する場合、読み込む
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	} else if !os.IsNotExist(err) {
+		// .envファイルが存在しない以外のエラーが発生した場合、エラーをログに出力
+		log.Fatal(err)
+	}
 	
 	host := os.Getenv("DATABASE_HOST_NAME")
     user := os.Getenv("DATABASE_USER_NAME")
