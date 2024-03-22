@@ -1,8 +1,10 @@
 package controller
 
 import (
-	"log"
+	"fmt"
+	"math"
 	"net/http"
+	"strconv"
 
 	"myapp/model"
 
@@ -11,13 +13,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func CreateRestaurants(c echo.Context) error {
-	restaurants := model.Restaurant{}
-	if err := c.Bind(&restaurants); err != nil {
-		return err
-	}
-	model.DB.Create(&restaurants)
-	return c.JSON(http.StatusOK, restaurants)
+func haversine(lat1, lon1, lat2, lon2 float64) float64 {
+	var R = 6371 // Earth radius in kilometers
+	var φ1 = lat1 * math.Pi / 180 // φ, λ in radians
+	var φ2 = lat2 * math.Pi / 180
+	var Δφ = (lat2 - lat1) * math.Pi / 180
+	var Δλ = (lon2 - lon1) * math.Pi / 180
+
+	var a = math.Sin(Δφ/2)*math.Sin(Δφ/2) +
+		math.Cos(φ1)*math.Cos(φ2)*
+			math.Sin(Δλ/2)*math.Sin(Δλ/2)
+	var c = 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	var d = float64(R) * c // in kilometers
+
+	return d
 }
 
 func GetRestaurant(c echo.Context) error {
@@ -68,6 +78,10 @@ func GetRestaurant(c echo.Context) error {
 	output_restaurant.RestaurantSeasonalCount = seasonalData.Count
 	output_restaurant.RestaurantSeasonalShort = seasonalData.Short
 	output_restaurant.RestaurantSeasonalFoodname = seasonalData.Foodname
+	output_restaurant.NewRestaurantLocalPopularKakariuke = restaurant.NewRestaurantLocalPopularKakariuke
+	output_restaurant.NewRestaurantLocalPopularBERT = restaurant.NewRestaurantLocalPopularBERT
+	output_restaurant.RestaurantLocalRate = restaurant.RestaurantLocalRate
+	output_restaurant.RestaurantZenkokuRate = restaurant.RestaurantZenkokuRate
 	output_restaurant.RepresentativeReview = []string{}
 	// output_restaurantにStoreGenreを追加
 	for _, restaurant_genre := range restaurant_genres {
@@ -95,6 +109,9 @@ func GetRestaurants(c echo.Context) error {
 	month := c.QueryParam("month")
 	time := c.QueryParam("time")
 	seasonalFoodName := c.QueryParam("seasonalfoodname")
+	radius := c.QueryParam("radius")
+	position_latitude := c.QueryParam("position_latitude")
+	position_longitude := c.QueryParam("position_longitude")
 
 	genre := model.Genre{}
 	if err := model.DB.Where("genre_name = ?", genreName).First(&genre).Error; err != nil {
@@ -142,11 +159,6 @@ func GetRestaurants(c echo.Context) error {
 		seasonal_food_restaurant_ids = slices.Compact(seasonal_food_restaurant_ids)
 	}
 
-	log.Println(restaurant_ids)
-	log.Println(seasonal_food_restaurant_ids)
-
-	
-
 	// 初期クエリ
 	query := model.DB.Model(&model.Restaurant{})
 
@@ -154,6 +166,7 @@ func GetRestaurants(c echo.Context) error {
 	query = query.Where("restaurant_id IN ?", restaurant_ids)
 	// timeがlunchの場合,store_lunch_price_rangeのクエリ
 	if time == "lunch" {
+		query = query.Where("store_lunch_price_range<?", 60000)
 		if minbudget != "" {
 			query = query.Where("store_lunch_price_range>=? ", minbudget)
 		}
@@ -161,10 +174,10 @@ func GetRestaurants(c echo.Context) error {
 			query = query.Where("store_lunch_price_range<=?", maxbudget)
 		}
 	}
-	// 予算が60000以上の飲食店を除外する
-	query = query.Where("store_dinner_price_range<?", 60000)
+	
 	// timeがdinnerの場合,store_dinner_price_rangeのクエリ
 	if time == "dinner" {
+		query = query.Where("store_dinner_price_range<?", 60000)
 		if minbudget != "" {
 			query = query.Where("store_dinner_price_range>=?", minbudget)
 		}
@@ -197,6 +210,8 @@ func GetRestaurants(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	
+	
 	// model.Restaurants_outputに変換
 	Restaurants_output := []model.Restaurants_output{}
 	for _, restaurant := range restaurants {
@@ -228,7 +243,40 @@ func GetRestaurants(c echo.Context) error {
 			RestaurantSeasonalCount:    restaurant_seasonalData.Count,
 			RestaurantSeasonalShort:    restaurant_seasonalData.Short,
 			RestaurantSeasonalFoodname: restaurant_seasonalData.Foodname,
+			NewRestaurantLocalPopularKakariuke: restaurant.NewRestaurantLocalPopularKakariuke,
+			NewRestaurantLocalPopularBERT: restaurant.NewRestaurantLocalPopularBERT,
+			RestaurantLocalRate: restaurant.RestaurantLocalRate,
+			RestaurantZenkokuRate: restaurant.RestaurantZenkokuRate,
 		})
+
+		// restaurant_outputの中でpositionとの距離がradius以内の飲食店を取得
+		// undifinedの場合は、radius以内の飲食店を取得しない
+
+		if radius != "" && position_latitude != "" && position_longitude != ""&& radius != "undefined" && position_latitude != "undefined" && position_longitude != "undefined" {
+			var tmp_Restaurants_output []model.Restaurants_output
+
+			radius, _ := strconv.ParseFloat(radius, 64)
+			positionlatitude, _ := strconv.ParseFloat(position_latitude, 64)
+			positionLongitude, _ := strconv.ParseFloat(position_longitude, 64)
+
+			for _, restaurant_output := range Restaurants_output {
+				// restaurantの緯度経度を取得
+				restaurant_latitude, _ := strconv.ParseFloat(restaurant_output.Latitude, 64)
+				restaurant_longitude, _ := strconv.ParseFloat(restaurant_output.Longitude, 64)
+				// restaurantとpositionの距離を取得
+				distance := haversine(positionlatitude, positionLongitude, restaurant_latitude, restaurant_longitude)
+				// radius以内の飲食店を取得
+				if distance > 0 && distance < radius{
+					tmp_Restaurants_output = append(tmp_Restaurants_output, restaurant_output)
+				}
+			}
+			
+			Restaurants_output = tmp_Restaurants_output
+		}
+	}
+	fmt.Printf("%v", Restaurants_output)
+	if len(Restaurants_output) == 0 {
+		return c.JSON(http.StatusOK, []model.Restaurants_output{})
 	}
 
 	return c.JSON(http.StatusOK, Restaurants_output)

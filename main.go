@@ -16,7 +16,6 @@ func connect(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "DB接続失敗しました")
 	} else {
-		// もし、DBの中にテーブルがなかったら、migrateする
 		return c.String(http.StatusOK, "DB接続しました")
 	}
 }
@@ -26,7 +25,7 @@ func main() {
 
 	// CORSの設定
      e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-        AllowOrigins: []string{"http://localhost:3000"},
+        AllowOrigins: []string{"http://localhost:8064","http://localhost:3000","http://180.43.174.138:8064"},
         AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
     }))
 	
@@ -34,4 +33,5 @@ func main() {
 	e.GET("/restaurants", controller.GetRestaurants)
 	e.GET("/restaurant", controller.GetRestaurant)
 	e.Logger.Fatal(e.Start(":8080"))
+	// e.Logger.Fatal(e.Start(":8023"))
 }

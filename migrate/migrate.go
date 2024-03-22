@@ -33,6 +33,10 @@ type Json_Restaurant struct {
 	Longitude              string    `json:"longitude"`
 	Latitude               string    `json:"latitude"`
 	ID                     int       `json:"id"`
+	NewRestaurantLocalPopularKakariuke int `json:"new_restaurant_local_popular_kakariuke"`
+	NewRestaurantLocalPopularBERT int `json:"new_restaurant_local_popular_bert"`
+	RestaurantLocalRate int `json:"restaurant_local_rate"`
+	RestaurantZenkokuRate int `json:"restaurant_zenkoku_rate"`
 }
 
 // output用の構造体
@@ -52,6 +56,10 @@ type Restaurant struct {
 	Longitude              string
 	Latitude               string
 	RestaurantID           int 
+	NewRestaurantLocalPopularKakariuke int 
+	NewRestaurantLocalPopularBERT int 
+	RestaurantLocalRate int 
+	RestaurantZenkokuRate int 
 }
 
 type Genre struct {
@@ -114,13 +122,13 @@ func removeDuplicate(genre_data []Genre) []Genre {
 func Add_data_db(db *gorm.DB) {
 	// ファイルを読み込む
 	log.Println("migrate start")
-	file, err := os.Open("restaurant_info.json")
+	file, err := os.Open("new_restaurant_info.json")
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	b, err := os.ReadFile("restaurant_info.json")
+	b, err := os.ReadFile("new_restaurant_info.json")
 	if err != nil {
 		panic(err)
 	}
@@ -149,6 +157,10 @@ func Add_data_db(db *gorm.DB) {
 			Longitude:              restaurant.Longitude,
 			Latitude:               restaurant.Latitude,
 			RestaurantID:           restaurant.ID,
+			NewRestaurantLocalPopularKakariuke: restaurant.NewRestaurantLocalPopularKakariuke,
+			NewRestaurantLocalPopularBERT: restaurant.NewRestaurantLocalPopularBERT,
+			RestaurantLocalRate: restaurant.RestaurantLocalRate,
+			RestaurantZenkokuRate: restaurant.RestaurantZenkokuRate,
 		})
 	}
 

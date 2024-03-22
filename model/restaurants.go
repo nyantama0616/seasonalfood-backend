@@ -16,6 +16,10 @@ type Restaurant struct {
 	Longitude              string
 	Latitude               string
 	RestaurantID           int 
+	NewRestaurantLocalPopularKakariuke int 
+	NewRestaurantLocalPopularBERT int 
+	RestaurantLocalRate int 
+	RestaurantZenkokuRate int 
 }
 
 type Genre struct {
@@ -68,6 +72,10 @@ type Restaurants_output struct {
 	RestaurantSeasonalCount         float64
 	RestaurantSeasonalShort         float64
 	RestaurantSeasonalFoodname     string
+	NewRestaurantLocalPopularKakariuke int 
+	NewRestaurantLocalPopularBERT int 
+	RestaurantLocalRate int 
+	RestaurantZenkokuRate int 
 }
 
 type RepresentativeReview struct {
@@ -97,4 +105,8 @@ type Restaurant_output struct {
 	RestaurantSeasonalShort         float64
 	RestaurantSeasonalFoodname     string
 	RepresentativeReview []string
+	NewRestaurantLocalPopularKakariuke int 
+	NewRestaurantLocalPopularBERT int 
+	RestaurantLocalRate int 
+	RestaurantZenkokuRate int 
 }
