@@ -32,6 +32,6 @@ func main() {
 	e.GET("/", connect)
 	e.GET("/restaurants", controller.GetRestaurants)
 	e.GET("/restaurant", controller.GetRestaurant)
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":10000"))
 	// e.Logger.Fatal(e.Start(":8023"))
 }
