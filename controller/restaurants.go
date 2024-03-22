@@ -114,7 +114,7 @@ func GetRestaurants(c echo.Context) error {
 	position_longitude := c.QueryParam("position_longitude")
 
 	genre := model.Genre{}
-	if err := model.DB.Where("genre_name = ?", genreName).First(&genre).Error; err != nil {
+	if err := model.DB.Where("genre_name=?", genreName).First(&genre).Error; err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Genre not found")
 	}
 
