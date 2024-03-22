@@ -16,6 +16,16 @@ import (
 var DB *gorm.DB
 var err error
 
+func GetDBInfo() string {
+	host := os.Getenv("DATABASE_HOST_NAME")
+	user := os.Getenv("DATABASE_USER_NAME")
+	password := os.Getenv("DATABASE_PASSWORD")
+	dbname := os.Getenv("DATABASE_NAME")
+	port := os.Getenv("DATABASE_PORT")
+
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbname, port)
+}
+
 func init(){
     _, err := os.Stat(".env")
 	if err == nil {
@@ -28,15 +38,8 @@ func init(){
 		// .envファイルが存在しない以外のエラーが発生した場合、エラーをログに出力
 		log.Fatal(err)
 	}
-	
-	host := os.Getenv("DATABASE_HOST_NAME")
-    user := os.Getenv("DATABASE_USER_NAME")
-    password := os.Getenv("DATABASE_PASSWORD")
-    dbname := os.Getenv("DATABASE_NAME")
-    port := os.Getenv("DATABASE_PORT")
 
-	// dsn := "host=postgresql user=root password=password dbname=test port=5432 sslmode=disable"
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbname, port)
+	dsn := GetDBInfo()
 
 	for i :=0; i<5; i++ {
 		DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})

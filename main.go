@@ -7,13 +7,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"fmt"
 )
 
 func connect(c echo.Context) error {
 	db, _ := model.DB.DB()
-	defer db.Close()
 	err := db.Ping()
+	defer db.Close()
+	fmt.Printf("db info: %s\n", model.GetDBInfo())
 	if err != nil {
+		fmt.Println("DB接続エラー:", err)
 		return c.String(http.StatusInternalServerError, "DB接続失敗しました")
 	} else {
 		return c.String(http.StatusOK, "DB接続しました")
