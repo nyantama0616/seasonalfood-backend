@@ -1,2 +1,3 @@
 # tmpfileを除外
 .tmp
+.env

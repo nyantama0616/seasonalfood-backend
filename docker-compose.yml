@@ -14,53 +14,24 @@ services:
     volumes:
       - .:/app
 
-  db:
-    container_name: db
-    build:
-      context: .
-      dockerfile: db.dockerfile
-    tty: true
-    command: >
-      bash -c '
-      touch /tmp/mysql.log &&
-      tail -f /tmp/mysql.log &
-      /usr/local/bin/docker-entrypoint.sh mysqld
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-      --general-log=true
-      --general-log-file=/tmp/mysql.log
-      '
-    ports:
-      - 3306:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      MYSQL_DATABASE: "test"
-      MYSQL_USER: "tester"
-      MYSQL_PASSWORD: "password"
+  postgresql:
+    image: postgres:13.3
     volumes:
-      - type: volume
-        source: mysql_data
-        target: /var/lib/mysql
+      - postgresql-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
     networks:
       - default
-  phpmyadmin:
-    container_name: phpmyadmin
-    image: phpmyadmin
-    depends_on:
-      - db
-    environment:
-      - PMA_ARBITRARY=1
-      - PMA_HOSTS=db
-      - PMA_USER=root
-      - PMA_PASSWORD=root
-    ports:
-      - "3001:80"
 
 networks:
   default:
 
 volumes:
-  mysql_data:
+  # mysql_data:
+  postgresql-data:
 # # 本番用
 # services:
 #   app:
